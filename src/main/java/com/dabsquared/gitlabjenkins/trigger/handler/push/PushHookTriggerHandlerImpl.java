@@ -6,13 +6,13 @@ import com.dabsquared.gitlabjenkins.gitlab.hook.model.PushHook;
 import com.dabsquared.gitlabjenkins.trigger.exception.NoRevisionToBuildException;
 import com.dabsquared.gitlabjenkins.trigger.filter.BranchFilter;
 import com.dabsquared.gitlabjenkins.trigger.handler.AbstractWebHookTriggerHandler;
+import com.dabsquared.gitlabjenkins.util.WebHookConverter;
 import hudson.model.Job;
 import hudson.plugins.git.RevisionParameterAction;
 import org.eclipse.jgit.util.StringUtils;
 
 import java.util.List;
 
-import static com.dabsquared.gitlabjenkins.cause.CauseDataBuilder.causeData;
 import static com.dabsquared.gitlabjenkins.trigger.handler.builder.generated.BuildStatusUpdateBuilder.buildStatusUpdate;
 
 /**
@@ -40,35 +40,7 @@ class PushHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<PushHook>
 
     @Override
     protected CauseData retrieveCauseData(PushHook hook) {
-        return causeData()
-                .withActionType(CauseData.ActionType.PUSH)
-                .withSourceProjectId(hook.getProjectId())
-                .withTargetProjectId(hook.getProjectId())
-                .withBranch(getTargetBranch(hook))
-                .withSourceBranch(getTargetBranch(hook))
-                .withUserName(hook.getUserName())
-                .withUserEmail(hook.getUserEmail())
-                .withSourceRepoHomepage(hook.getRepository().getHomepage())
-                .withSourceRepoName(hook.getRepository().getName())
-                .withSourceNamespace(hook.getProject().getNamespace())
-                .withSourceRepoUrl(hook.getRepository().getUrl())
-                .withSourceRepoSshUrl(hook.getRepository().getGitSshUrl())
-                .withSourceRepoHttpUrl(hook.getRepository().getGitHttpUrl())
-                .withMergeRequestTitle("")
-                .withMergeRequestDescription("")
-                .withMergeRequestId(null)
-                .withMergeRequestIid(null)
-                .withTargetBranch(getTargetBranch(hook))
-                .withTargetRepoName("")
-                .withTargetNamespace("")
-                .withTargetRepoSshUrl("")
-                .withTargetRepoHttpUrl("")
-                .withTriggeredByUser(retrievePushedBy(hook))
-                .withBefore(hook.getBefore())
-                .withAfter(hook.getAfter())
-                .withLastCommit(hook.getAfter())
-                .withTargetProjectUrl(hook.getProject().getWebUrl())
-                .build();
+        return WebHookConverter.convert(hook);
     }
 
     @Override

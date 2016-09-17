@@ -2,6 +2,7 @@ package com.dabsquared.gitlabjenkins.gitlab.api;
 
 import com.dabsquared.gitlabjenkins.gitlab.api.model.Branch;
 import com.dabsquared.gitlabjenkins.gitlab.api.model.BuildState;
+import com.dabsquared.gitlabjenkins.gitlab.api.model.File;
 import com.dabsquared.gitlabjenkins.gitlab.api.model.MergeRequest;
 import com.dabsquared.gitlabjenkins.gitlab.api.model.Project;
 import com.dabsquared.gitlabjenkins.gitlab.api.model.User;
@@ -23,15 +24,14 @@ import java.util.List;
  * @author Robin Müller
  */
 @Path("/api/v3")
+@Produces(MediaType.APPLICATION_JSON)
 public interface GitLabApi {
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects")
     Project createProject(@QueryParam("name") String projectName);
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/merge_requests")
     void createMergeRequest(
         @PathParam("projectId") Integer projectId,
@@ -40,12 +40,10 @@ public interface GitLabApi {
         @QueryParam("title") String title);
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectName}")
     Project getProject(@PathParam("projectName") String projectName);
 
     @PUT
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}")
     Project updateProject(@PathParam("projectId") String projectId,
                           @QueryParam("name") String name,
@@ -56,7 +54,6 @@ public interface GitLabApi {
     void deleteProject(@PathParam("projectId") String projectId);
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/hooks")
     void addProjectHook(@PathParam("projectId") String projectId,
                         @QueryParam("url") String url,
@@ -65,7 +62,6 @@ public interface GitLabApi {
                         @QueryParam("note_events") Boolean noteEvents);
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/statuses/{sha}")
     void changeBuildStatus(@PathParam("projectId") String projectId,
                            @PathParam("sha") String sha,
@@ -76,7 +72,6 @@ public interface GitLabApi {
                            @QueryParam("description") String description);
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/statuses/{sha}")
     void changeBuildStatus(@PathParam("projectId") Integer projectId,
                            @PathParam("sha") String sha,
@@ -87,13 +82,11 @@ public interface GitLabApi {
                            @QueryParam("description") String description);
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/repository/commits/{sha}")
     void getCommit(@PathParam("projectId") String projectId, @PathParam("sha") String sha);
 
 
     @PUT
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/merge_requests/{mergeRequestId}/merge")
     void acceptMergeRequest(@PathParam("projectId") Integer projectId,
                             @PathParam("mergeRequestId") Integer mergeRequestId,
@@ -101,14 +94,12 @@ public interface GitLabApi {
                             @QueryParam("should_remove_source_branch") boolean shouldRemoveSourceBranch);
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/merge_requests/{mergeRequestId}/notes")
     void createMergeRequestNote(@PathParam("projectId") Integer projectId,
                                 @PathParam("mergeRequestId") Integer mergeRequestId,
                                 @QueryParam("body") String body);
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/merge_requests")
     List<MergeRequest> getMergeRequests(@PathParam("projectId") String projectId,
                                         @QueryParam("state") State state,
@@ -116,28 +107,27 @@ public interface GitLabApi {
                                         @QueryParam("per_page") int perPage);
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/repository/branches")
     List<Branch> getBranches(@PathParam("projectId") String projectId);
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/projects/{projectId}/repository/branches/{branch}")
     Branch getBranch(@PathParam("projectId") String projectId,
                      @PathParam("branch") String branch);
 
     @HEAD
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/user")
     void headCurrentUser();
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/user")
     User getCurrentUser();
 
+    @GET
+    @Path("/users/{userId}")
+    User getUser(@PathParam("userId") int userId);
+
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/users")
     User addUser(@QueryParam("email") String email,
                  @QueryParam("username") String username,
@@ -145,11 +135,16 @@ public interface GitLabApi {
                  @QueryParam("password") String password);
 
     @PUT
-    @Produces(MediaType.APPLICATION_JSON)
     @Path("/users/{userId}")
     User updateUser(@PathParam("userId") String userId,
                     @QueryParam("email") String email,
                     @QueryParam("username") String username,
                     @QueryParam("name") String name,
                     @QueryParam("password") String password);
+
+    @GET
+    @Path("/projects/{projectId}/repository/files")
+    File getFile(@PathParam("projectId") String projectId,
+                 @QueryParam("file_path") String filePath,
+                 @QueryParam("ref") String ref);
 }

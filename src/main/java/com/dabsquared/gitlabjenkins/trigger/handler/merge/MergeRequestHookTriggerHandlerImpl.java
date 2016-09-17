@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.dabsquared.gitlabjenkins.cause.CauseDataBuilder.causeData;
 import static com.dabsquared.gitlabjenkins.trigger.handler.builder.generated.BuildStatusUpdateBuilder.buildStatusUpdate;
 import static com.dabsquared.gitlabjenkins.util.LoggerUtil.toArray;
+import static com.dabsquared.gitlabjenkins.util.WebHookConverter.convert;
 
 /**
  * @author Robin Müller
@@ -66,33 +66,7 @@ class MergeRequestHookTriggerHandlerImpl extends AbstractWebHookTriggerHandler<M
 
     @Override
     protected CauseData retrieveCauseData(MergeRequestHook hook) {
-        return causeData()
-                .withActionType(CauseData.ActionType.MERGE)
-                .withSourceProjectId(hook.getObjectAttributes().getSourceProjectId())
-                .withTargetProjectId(hook.getObjectAttributes().getTargetProjectId())
-                .withBranch(hook.getObjectAttributes().getSourceBranch())
-                .withSourceBranch(hook.getObjectAttributes().getSourceBranch())
-                .withUserName(hook.getObjectAttributes().getLastCommit().getAuthor().getName())
-                .withUserEmail(hook.getObjectAttributes().getLastCommit().getAuthor().getEmail())
-                .withSourceRepoHomepage(hook.getObjectAttributes().getSource().getHomepage())
-                .withSourceRepoName(hook.getObjectAttributes().getSource().getName())
-                .withSourceNamespace(hook.getObjectAttributes().getSource().getNamespace())
-                .withSourceRepoUrl(hook.getObjectAttributes().getSource().getUrl())
-                .withSourceRepoSshUrl(hook.getObjectAttributes().getSource().getSshUrl())
-                .withSourceRepoHttpUrl(hook.getObjectAttributes().getSource().getHttpUrl())
-                .withMergeRequestTitle(hook.getObjectAttributes().getTitle())
-                .withMergeRequestDescription(hook.getObjectAttributes().getDescription())
-                .withMergeRequestId(hook.getObjectAttributes().getId())
-                .withMergeRequestIid(hook.getObjectAttributes().getIid())
-                .withTargetBranch(hook.getObjectAttributes().getTargetBranch())
-                .withTargetRepoName(hook.getObjectAttributes().getTarget().getName())
-                .withTargetNamespace(hook.getObjectAttributes().getTarget().getNamespace())
-                .withTargetRepoSshUrl(hook.getObjectAttributes().getTarget().getSshUrl())
-                .withTargetRepoHttpUrl(hook.getObjectAttributes().getTarget().getHttpUrl())
-                .withTriggeredByUser(hook.getObjectAttributes().getLastCommit().getAuthor().getName())
-                .withLastCommit(hook.getObjectAttributes().getLastCommit().getId())
-                .withTargetProjectUrl(hook.getProject().getWebUrl())
-                .build();
+        return convert(hook);
     }
 
     @Override

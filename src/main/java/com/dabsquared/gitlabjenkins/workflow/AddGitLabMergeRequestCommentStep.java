@@ -21,7 +21,7 @@ import javax.ws.rs.WebApplicationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty.getClient;
+import static com.dabsquared.gitlabjenkins.util.BuildUtil.getClientForBuild;
 
 /**
  * @author <a href="mailto:robin.mueller@1und1.de">Robin Müller</a>
@@ -63,7 +63,7 @@ public class AddGitLabMergeRequestCommentStep extends AbstractStepImpl {
                 Integer projectId = cause.getData().getTargetProjectId();
                 Integer mergeRequestId = cause.getData().getMergeRequestId();
                 if (projectId != null && mergeRequestId != null) {
-                    GitLabApi client = getClient(run);
+                    GitLabApi client = getClientForBuild(run);
                     if (client == null) {
                         println("No GitLab connection configured");
                     } else {

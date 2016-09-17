@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty.getClient;
+import static com.dabsquared.gitlabjenkins.util.BuildUtil.getClientForBuild;
 
 /**
  * @author Robin Müller
@@ -32,7 +32,7 @@ public class CommitStatusUpdater {
     private final static Logger LOGGER = Logger.getLogger(CommitStatusUpdater.class.getName());
 
     public static void updateCommitStatus(Run<?, ?> build, TaskListener listener, BuildState state, String name) {
-        GitLabApi client = getClient(build);
+        GitLabApi client = getClientForBuild(build);
         if (client == null) {
             println(listener, "No GitLab connection configured");
             return;
@@ -120,7 +120,7 @@ public class CommitStatusUpdater {
         }
 
         List<String> result = new ArrayList<>();
-        GitLabApi gitLabClient = getClient(build);
+        GitLabApi gitLabClient = getClientForBuild(build);
         if (gitLabClient == null) {
             LOGGER.log(Level.WARNING, "No gitlab client found.");
             return result;

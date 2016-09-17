@@ -1,5 +1,9 @@
 package com.dabsquared.gitlabjenkins.util;
 
+import com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty;
+import com.dabsquared.gitlabjenkins.gitlab.api.GitLabApi;
+import com.dabsquared.gitlabjenkins.scm.GitLabSCMRevision;
+import com.google.common.base.MoreObjects;
 import hudson.model.Job;
 import hudson.model.Run;
 import hudson.plugins.git.Branch;
@@ -47,6 +51,10 @@ public class BuildUtil {
             }
         }
         return null;
+    }
+
+    public static GitLabApi getClientForBuild(Run<?, ?> build) {
+        return MoreObjects.firstNonNull(GitLabConnectionProperty.getClient(build), GitLabSCMRevision.getClient(build));
     }
 
     private static boolean isNoMergeBuild(BuildData data, MergeRecord merge) {

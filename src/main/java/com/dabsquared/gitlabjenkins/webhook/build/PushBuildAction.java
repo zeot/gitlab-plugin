@@ -1,13 +1,17 @@
 package com.dabsquared.gitlabjenkins.webhook.build;
 
 import com.dabsquared.gitlabjenkins.GitLabPushTrigger;
+import com.dabsquared.gitlabjenkins.gitlab.hook.model.Commit;
 import com.dabsquared.gitlabjenkins.gitlab.hook.model.Project;
 import com.dabsquared.gitlabjenkins.gitlab.hook.model.PushHook;
+import com.dabsquared.gitlabjenkins.scm.GitLabSCMSource;
 import com.dabsquared.gitlabjenkins.util.JsonUtil;
+import com.dabsquared.gitlabjenkins.util.WebHookConverter;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.security.ACL;
 import hudson.util.HttpResponses;
+import jenkins.plugins.git.AbstractGitSCMSource;
 import jenkins.plugins.git.GitSCMSource;
 import jenkins.scm.api.SCMSource;
 import jenkins.scm.api.SCMSourceOwner;
@@ -17,6 +21,8 @@ import org.eclipse.jgit.transport.URIish;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,25 +88,48 @@ public class PushBuildAction extends BuildWebHookAction {
     }
 
     private class SCMSourceOwnerNotifier implements Runnable {
+        private static final String NO_COMMIT = "0000000000000000000000000000000000000000";
+
         public void run() {
             for (SCMSource scmSource : ((SCMSourceOwner) project).getSCMSources()) {
-                if (scmSource instanceof GitSCMSource) {
-                    GitSCMSource gitSCMSource = (GitSCMSource) scmSource;
+                if (scmSource instanceof AbstractGitSCMSource) {
+                    AbstractGitSCMSource abstractGitSCMSource = (AbstractGitSCMSource) scmSource;
                     try {
-                        if (new URIish(gitSCMSource.getRemote()).equals(new URIish(gitSCMSource.getRemote()))) {
-                            if (!gitSCMSource.isIgnoreOnPushNotifications()) {
+                        if (new URIish(abstractGitSCMSource.getRemote()).equals(new URIish(abstractGitSCMSource.getRemote()))) {
+                            boolean skipBuild;
+                            skipBuild = abstractGitSCMSource instanceof GitSCMSource && ((GitSCMSource) abstractGitSCMSource).isIgnoreOnPushNotifications();
+                            if (!skipBuild) {
+                                if (abstractGitSCMSource instanceof GitLabSCMSource && pushHook.getRef() != null) {
+                                    notifyGitLabSource((GitLabSCMSource) abstractGitSCMSource);
+                                }
                                 LOGGER.log(Level.FINE, "Notify scmSourceOwner {0} about changes for {1}",
-                                           toArray(project.getName(), gitSCMSource.getRemote()));
+                                           toArray(project.getName(), abstractGitSCMSource.getRemote()));
                                 ((SCMSourceOwner) project).onSCMSourceUpdated(scmSource);
                             } else {
                                 LOGGER.log(Level.FINE, "Ignore on push notification for scmSourceOwner {0} about changes for {1}",
-                                           toArray(project.getName(), gitSCMSource.getRemote()));
+                                           toArray(project.getName(), abstractGitSCMSource.getRemote()));
                             }
                         }
                     } catch (URISyntaxException e) {
                         // nothing to do
                     }
                 }
+            }
+        }
+
+        private void notifyGitLabSource(GitLabSCMSource gitLabSource) {
+            String branchName = pushHook.getRef().replaceFirst("^refs/heads/", "");
+            if (pushHook.getAfter().equals(NO_COMMIT)) {
+                gitLabSource.removeBranch(branchName);
+            } else {
+                long lastModified;
+                List<Commit> commits = pushHook.getCommits();
+                if (commits != null && commits.size() > 0) {
+                    lastModified = commits.get(commits.size() - 1).getTimestamp().getTime();
+                } else {
+                    lastModified = new Date().getTime();
+                }
+                gitLabSource.updateBranch(branchName, pushHook.getAfter(), lastModified, WebHookConverter.convert(pushHook));
             }
         }
     }
